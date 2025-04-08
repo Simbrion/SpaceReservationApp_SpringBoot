@@ -1,11 +1,11 @@
 package com.srasb.model.dto;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.Length;
 
 
 @Builder
@@ -17,8 +17,7 @@ public class CustomerDto implements Dto {
     private int id;
 
     @NotNull(message = "The name cannot be null.")
-    @Length(min = 3, message = "The name should be at least 3 letters long.")
-    @Length (max = 20, message = "The name should be not longer than 20 letters.")
+    @Size(min = 3, max = 20, message = "The name should be between 3 and 20 letters long.")
     private String name;
 
 

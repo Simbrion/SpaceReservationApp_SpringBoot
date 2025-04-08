@@ -20,7 +20,7 @@ public class SpaceSendListController {
     @GetMapping("/spaces/show")
 
 
-    public ResponseEntity<List<SpaceDto>> showSpaces(HttpSession session) {
+    public ResponseEntity<List<SpaceDto>> sendListOfSpaces(HttpSession session) {
 
         Boolean isAdminSession = (Boolean) session.getAttribute(AdminLogin.ADMIN_SESSION_ATTRIBUTE);
 

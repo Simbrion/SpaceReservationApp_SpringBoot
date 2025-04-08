@@ -18,7 +18,7 @@ public class CustomerSendListController {
 
 
     @GetMapping("/customers/show")
-    public ResponseEntity<List<CustomerDto>> showCustomers() {
+    public ResponseEntity<List<CustomerDto>> sendListOfCustomers() {
            List<CustomerDto> customerDtoList = customerDtoService.getDtoList();
 
         if (customerDtoList.isEmpty()) {

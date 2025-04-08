@@ -18,7 +18,7 @@ public class ReservationSendListController {
 
 
     @GetMapping("/reservations/show")
-    public ResponseEntity<List<ReservationDto>> showSpaces() {
+    public ResponseEntity<List<ReservationDto>> sendListOfRerervations() {
            List<ReservationDto> reservationDtoList = reservationDtoService.getDtoList();
 
         if (reservationDtoList.isEmpty()) {

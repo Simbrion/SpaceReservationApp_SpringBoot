@@ -4,12 +4,11 @@ import com.srasb.model.entity.TypeOfSpace;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.Length;
-
 
 @Builder
 @AllArgsConstructor
@@ -20,8 +19,7 @@ public class SpaceDto implements Dto {
     private int id;
 
     @NotNull(message = "The name field is empty.")
-    @Length(max = 20, message = "The name should be up to 20 letters long.")
-    @Length(min = 3, message = "The name should be up at least 3 letters long.")
+    @Size(min = 3, max = 20, message = "The name should be between 3 and 20 letters long.")
     private String name;
 
     @Enumerated(EnumType.STRING)

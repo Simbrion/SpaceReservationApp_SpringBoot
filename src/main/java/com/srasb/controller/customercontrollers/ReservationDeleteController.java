@@ -17,7 +17,7 @@ public class ReservationDeleteController {
 
 
     @DeleteMapping("/reservations/delete/{id}")
-    public ResponseEntity<String> cancelReservation(@PathVariable int id, HttpSession session) {
+    public ResponseEntity<String> deleteReservation(@PathVariable int id, HttpSession session) {
 
         Integer customerId = (Integer) session.getAttribute(CustomerLoginController.CUSTOMER_ID_ATTRIBUTE);
 
