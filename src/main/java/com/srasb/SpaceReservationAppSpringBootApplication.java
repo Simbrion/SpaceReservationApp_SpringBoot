@@ -10,4 +10,5 @@ public class SpaceReservationAppSpringBootApplication {
 		SpringApplication.run(SpaceReservationAppSpringBootApplication.class, args);
 	}
 
+
 }
