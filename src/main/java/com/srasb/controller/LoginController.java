@@ -2,6 +2,7 @@ package com.srasb.controller;
 
 import com.srasb.model.dto.CustomerDto;
 import com.srasb.service.customerservice.CustomerEntityService;
+import com.srasb.util.messagecreators.MessageCreator;
 import com.srasb.service.userservice.UserAuthenticationService;
 import com.srasb.service.userservice.UserRepositoryService;
 import com.srasb.util.JwtUtil;
@@ -23,6 +24,7 @@ public class LoginController {
     private final UserAuthenticationService userDetailsService;
     public final CustomerEntityService customerEntityService;
     private final UserRepositoryService userRepositoryService;
+    private final MessageCreator messageCreator;
 
     private static final String ADMIN_USERNAME = "Admin";
 
@@ -34,39 +36,26 @@ public class LoginController {
         }
 
         final String jwt = jwtUtil.generateToken(ADMIN_USERNAME);
-        return ResponseEntity.ok("Session started for the administrator.\nJWT: " + jwt);
+        return ResponseEntity.ok(messageCreator.sessionStartedAdminMessage() + "\nJWT: " + jwt);
     }
-
 
     @PostMapping("/customer-login")
     public ResponseEntity<String> loginCustomer(@Valid @RequestBody CustomerDto customerDto,
-                                                                    BindingResult bindingResult) {
+                                                BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body("Validation failed: " + bindingResult.getAllErrors());
+            return ResponseEntity.badRequest().body(messageCreator.validationFailedMessage() + bindingResult.getAllErrors());
         }
 
         if (customerEntityService.findByName(customerDto.getName())) {
             final UserDetails userDetails = userDetailsService.loadUserByUsername(customerDto.getName());
             final String jwt = jwtUtil.generateToken(userDetails.getUsername());
 
-            return ResponseEntity.ok("Session started for the customer: "
+            return ResponseEntity.ok(messageCreator.sessionStartedCustomerMessage()
                     + customerDto.getName()
-                    + ", Token: "
+                    + "\nJWT: "
                     + jwt);
         }
 
-        if (customerEntityService.findByName(customerDto.getName())) {
-            final UserDetails userDetails = userDetailsService.loadUserByUsername(customerDto.getName());
-            final String jwt = jwtUtil.generateToken(userDetails.getUsername());
-
-            return ResponseEntity.ok("Session started for existing customer: "
-                                                                    + customerDto.getName()
-                                                                    + "\nJWT: "
-                                                                    + jwt);
-        }
-
-        return ResponseEntity.badRequest().body("There is no registered user with such name. Please register.");
-
+        return ResponseEntity.badRequest().body(messageCreator.noRegisteredUserWithNameMessage());
     }
-
 }

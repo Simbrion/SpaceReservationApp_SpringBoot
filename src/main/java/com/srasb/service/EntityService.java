@@ -2,12 +2,12 @@ package com.srasb.service;
 
 public interface EntityService<T, S>  {
 
-    public T getEntityFromDto(S dto);
+    T getEntityFromDto(S dto);
 
-    public void addEntityBasedOn(S dto);
+    void addEntityBasedOn(S dto);
 
-    public void deleteEntityById(int id);
+    void deleteEntityById(int id);
 
-    public T getEntityById(int id);
+    T getEntityById(int id);
 
 }

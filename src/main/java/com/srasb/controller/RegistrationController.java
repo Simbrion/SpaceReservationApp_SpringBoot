@@ -4,7 +4,7 @@ import com.srasb.model.dto.CustomerDto;
 import com.srasb.model.entity.CustomerEntity;
 import com.srasb.model.entity.UserRole;
 import com.srasb.model.entity.UserEntity;
-import com.srasb.repository.UserRepository;
+import com.srasb.util.messagecreators.MessageCreator;
 import com.srasb.service.userservice.UserRepositoryService;
 import com.srasb.service.customerservice.CustomerEntityService;
 import jakarta.validation.Valid;
@@ -23,19 +23,18 @@ public class RegistrationController {
     private final CustomerEntityService customerEntityService;
     private final UserRepositoryService userRepositoryService;
     private final PasswordEncoder passwordEncoder;
-    private final UserRepository userRepository;
-
+    private final MessageCreator messageCreator;
 
     @PostMapping("/register")
     public ResponseEntity<String> loginCustomer(@Valid @RequestBody CustomerDto customerDto,
-                                                                    BindingResult bindingResult) {
+                                                BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body("Validation failed: " + bindingResult.getAllErrors());
+            return ResponseEntity.badRequest().body(messageCreator.validationFailedMessage() + bindingResult.getAllErrors());
         }
 
         if (customerEntityService.isSaved(customerDto)) {
-            return ResponseEntity.badRequest().body("Validation failed: the customer with this name already exists!");
+            return ResponseEntity.badRequest().body(messageCreator.customerExistsMessage());
         }
 
         CustomerEntity newCustomer = new CustomerEntity();
@@ -50,9 +49,7 @@ public class RegistrationController {
         newUser.setUserRole(UserRole.ROLE_CUSTOMER);
         userRepositoryService.add(newUser);
 
-        return ResponseEntity.ok("The customer has been registered: "
-                                    + newCustomer.getName());
+        return ResponseEntity.ok(messageCreator.customerRegisteredMessage()
+                + newCustomer.getName());
     }
-
-
 }
