@@ -18,7 +18,7 @@ public class AdminUserSetup {
     @Bean
     public AdminUserSetup createAdminUser(PasswordEncoder passwordEncoder, UserRepositoryService userRepositoryService) {
 
-        if (!userRepositoryService.findByName("Admin")) {
+        if (userRepositoryService.findByUsername("Admin").isEmpty()) {
             UserEntity newUser = new UserEntity();
             newUser.setId(0);
             newUser.setUsername("Admin");

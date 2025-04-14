@@ -1,9 +1,9 @@
 package com.srasb.controller;
 
 import com.srasb.model.dto.CustomerDto;
-import com.srasb.repository.UserRepository;
 import com.srasb.service.customerservice.CustomerEntityService;
 import com.srasb.service.userservice.UserAuthenticationService;
+import com.srasb.service.userservice.UserRepositoryService;
 import com.srasb.util.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,14 +22,14 @@ public class LoginController {
     private final JwtUtil jwtUtil;
     private final UserAuthenticationService userDetailsService;
     public final CustomerEntityService customerEntityService;
-    private final UserRepository userRepository;
+    private final UserRepositoryService userRepositoryService;
 
     private static final String ADMIN_USERNAME = "Admin";
 
     @GetMapping("/admin-login")
     public ResponseEntity<String> loginCustomer() {
 
-        if (userRepository.findByUsername(ADMIN_USERNAME).isEmpty()) {
+        if (userRepositoryService.findByUsername(ADMIN_USERNAME).isEmpty()) {
             userDetailsService.loadUserByUsername(ADMIN_USERNAME);
         }
 

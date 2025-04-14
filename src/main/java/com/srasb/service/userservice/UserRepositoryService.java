@@ -5,6 +5,8 @@ import com.srasb.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserRepositoryService {
@@ -16,8 +18,8 @@ public class UserRepositoryService {
         userRepository.save(userEntity);
     }
 
-    public boolean findByName(String username) {
-        return userRepository.findByUsername(username).isPresent();
+    public Optional<UserEntity> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
 
