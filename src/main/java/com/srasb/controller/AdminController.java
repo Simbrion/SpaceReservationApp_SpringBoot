@@ -3,11 +3,13 @@ package com.srasb.controller;
 import com.srasb.model.dto.CustomerDto;
 import com.srasb.model.dto.ReservationDto;
 import com.srasb.model.dto.SpaceDto;
-import com.srasb.service.customerservice.CustomerDtoService;
+import com.srasb.model.entity.CustomerEntity;
+import com.srasb.model.entity.ReservationEntity;
+import com.srasb.model.entity.SpaceEntity;
+import com.srasb.service.DtoService;
 import com.srasb.service.customerservice.CustomerEntityService;
-import com.srasb.service.reservationservice.ReservationDtoService;
-import com.srasb.service.spaceservice.SpaceDtoService;
 import com.srasb.service.spaceservice.SpaceEntityService;
+import com.srasb.util.messagecreators.MessageCreator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,14 +25,16 @@ import java.util.List;
 public class AdminController {
 
     private final SpaceEntityService spaceEntityService;
-    private final SpaceDtoService spaceDtoService;
+    private final DtoService<SpaceDto, SpaceEntity> spaceDtoService;
     private final CustomerEntityService customerEntityService;
-    private final CustomerDtoService customerDtoService;
-    private final ReservationDtoService reservationDtoService;
+    private final DtoService<CustomerDto, CustomerEntity> customerDtoService;
+    private final DtoService<ReservationDto, ReservationEntity> reservationDtoService;
+    private final MessageCreator messageCreator;
 
 
     @GetMapping("/show-reservations")
-    public ResponseEntity<List<ReservationDto>> sendListOfRerervations() {
+    public ResponseEntity<List<ReservationDto>> sendListOfReservations() {
+        System.out.println("!!!");
         List<ReservationDto> reservationDtoList = reservationDtoService.getDtoList();
 
         if (reservationDtoList.isEmpty()) {
@@ -38,7 +42,6 @@ public class AdminController {
         }
 
         return new ResponseEntity<>(reservationDtoList, HttpStatus.OK);
-
     }
 
     @GetMapping("/show-customers")
@@ -50,20 +53,17 @@ public class AdminController {
         }
 
         return new ResponseEntity<>(customerDtoList, HttpStatus.OK);
-
     }
-
 
     @DeleteMapping("/delete-customer/{id}")
     public ResponseEntity<String> deleteCustomer(@PathVariable int id) {
 
         if (customerEntityService.getEntityById(id) == null) {
-            return ResponseEntity.badRequest().body("There is no customer with such id.");
+            return ResponseEntity.badRequest().body(messageCreator.noCustomerWithIdMessage());
         }
 
         customerEntityService.deleteEntityById(id);
-        return ResponseEntity.ok().body("The customer has been successfully deleted!");
-
+        return ResponseEntity.ok().body(messageCreator.customerDeletedMessage());
     }
 
     @PutMapping("change-space/{id}")
@@ -72,48 +72,45 @@ public class AdminController {
                                               BindingResult bindingResult) {
 
         if (spaceEntityService.getEntityById(id) == null) {
-            return ResponseEntity.badRequest().body("There is no space with such id.");
+            return ResponseEntity.badRequest().body(messageCreator.noSpaceWithIdMessage());
         }
 
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body("Validation failed: " + bindingResult.getAllErrors().toString());
+            return ResponseEntity.badRequest().body(messageCreator.validationFailedMessage() + bindingResult.getAllErrors().toString());
         }
 
         if (spaceEntityService.changeSpaceBasedOn(spaceDto, id)) {
-            return ResponseEntity.badRequest().body("The space has been successfully changed!");
+            return ResponseEntity.badRequest().body(messageCreator.spaceChangedMessage());
         }
 
-        return ResponseEntity.badRequest().body("Something went wrong when trying to space the changed space to the database");
+        return ResponseEntity.badRequest().body(messageCreator.spaceAddingErrorMessage());
     }
-
 
     @PostMapping("create-space")
     public ResponseEntity<String> createSpace(@Valid @RequestBody SpaceDto spaceDto,
                                               BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body("Validation failed: " + bindingResult.getAllErrors().toString());
+            return ResponseEntity.badRequest().body(messageCreator.validationFailedMessage() + bindingResult.getAllErrors().toString());
         }
 
         if (spaceEntityService.isSaved(spaceDto)) {
-            return ResponseEntity.badRequest().body("Validation failed: the space with this name already exists!");
+            return ResponseEntity.badRequest().body(messageCreator.spaceAlreadyExistsMessage());
         }
 
         spaceEntityService.addEntityBasedOn(spaceDto);
-        return ResponseEntity.ok().body("The space has been successfully saved!");
+        return ResponseEntity.ok().body(messageCreator.spaceSavedMessage());
     }
-
 
     @DeleteMapping("delete-space/{id}")
     public ResponseEntity<String> deleteSpace(@PathVariable int id) {
 
         if (spaceEntityService.getEntityById(id) == null) {
-            return ResponseEntity.badRequest().body("There is no space with such id.");
+            return ResponseEntity.badRequest().body(messageCreator.noSpaceWithIdMessage());
         }
 
         spaceEntityService.deleteEntityById(id);
-        return ResponseEntity.ok().body("The space has been successfully deleted!");
-
+        return ResponseEntity.ok().body(messageCreator.spaceDeletedMessage());
     }
 
     @GetMapping("/show-spaces")
@@ -126,8 +123,5 @@ public class AdminController {
         }
 
         return new ResponseEntity<>(spaceDtoList, HttpStatus.OK);
-
     }
-
-
 }

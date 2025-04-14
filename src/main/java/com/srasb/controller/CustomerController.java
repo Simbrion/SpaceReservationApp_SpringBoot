@@ -2,10 +2,11 @@ package com.srasb.controller;
 
 import com.srasb.model.dto.ReservationDto;
 import com.srasb.model.entity.ReservationEntity;
+import com.srasb.service.DtoService;
 import com.srasb.service.customerservice.CustomerEntityService;
-import com.srasb.service.reservationservice.ReservationDtoService;
 import com.srasb.service.reservationservice.ReservationEntityService;
 import com.srasb.service.spaceservice.SpaceEntityService;
+import com.srasb.util.messagecreators.MessageCreator;
 import com.srasb.util.TimeOverlapChecker;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,19 +29,21 @@ public class CustomerController {
     private final CustomerEntityService customerEntityService;
     private final SpaceEntityService spaceEntityService;
     private final TimeOverlapChecker timeOverlapChecker;
-    private final ReservationDtoService reservationDtoService;
+    private final DtoService<ReservationDto, ReservationEntity> reservationDtoService;
+    private final MessageCreator messageCreator;
+
 
 
     @PostMapping("create-reservation")
     public ResponseEntity<String> createReservation(@Valid @RequestBody ReservationDto reservationDto,
-                                                                        BindingResult bindingResult) {
+                                                    BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
-                return ResponseEntity.badRequest().body("Validation failed: " + bindingResult.getAllErrors().toString());
+            return ResponseEntity.badRequest().body(messageCreator.validationFailedMessage() + bindingResult.getAllErrors().toString());
         }
 
         if (!spaceEntityService.existsById(reservationDto.getSpaceId())) {
-            return ResponseEntity.badRequest().body("The space chosen for the reservation does not exist!");
+            return ResponseEntity.badRequest().body(messageCreator.spaceForReservationNotExists());
         }
 
         ReservationEntity reservationEntity = reservationEntityService.getEntityFromDto(reservationDto);
@@ -50,17 +53,17 @@ public class CustomerController {
         LocalDateTime endOfNewReservation = LocalDateTime.of(reservationDto.getDate(), reservationDto.getEndTime());
 
         if (timeOverlapChecker.startTimeOverlaps(startOfNewReservation, reservationEntity)) {
-            return ResponseEntity.badRequest().body("The start time of the reservation overlaps with the existing reservation!");
+            return ResponseEntity.badRequest().body(messageCreator.startTimeOverlapsMessage());
         }
 
         if (timeOverlapChecker.endTimeOverlaps(endOfNewReservation, reservationEntity)) {
-            return ResponseEntity.badRequest().body("The end time of the reservation overlaps with the existing reservation!");
+            return ResponseEntity.badRequest().body(messageCreator.endTimeOverlapsMessage());
         }
 
         reservationDto.setCustomerId(getAuthenticatedCustomerId());
 
         reservationEntityService.addEntityBasedOn(reservationDto);
-            return ResponseEntity.ok().body("The reservation has been successfully saved!");
+        return ResponseEntity.ok().body(messageCreator.reservationSavedMessage());
     }
 
     @DeleteMapping("delete-reservation/{id}")
@@ -69,17 +72,16 @@ public class CustomerController {
         final String loggedInCustomerName = SecurityContextHolder.getContext().getAuthentication().getName();
 
         if (reservationEntityService.getEntityById(id) == null) {
-            return ResponseEntity.badRequest().body("There is no reservation with such id.");
+            return ResponseEntity.badRequest().body(messageCreator.noReservationWithIdMessage());
         }
 
         if (!Objects.equals(reservationEntityService.getEntityById(id).getCustomerEntity().getName(), loggedInCustomerName)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("You are not allowed to delete this reservation.");
+                    .body(messageCreator.noRightsToDeleteReservationMessage());
         }
 
         reservationEntityService.deleteEntityById(id);
-        return ResponseEntity.ok().body("The reservation has been successfully deleted!");
-
+        return ResponseEntity.ok().body(messageCreator.reservationDeletedMessage());
     }
 
     @GetMapping("show-reservations")
@@ -87,7 +89,7 @@ public class CustomerController {
 
         List<ReservationDto> reservationDtoList = reservationDtoService.getDtoList()
                 .stream()
-                .filter(reservationDto -> reservationDto.getCustomerId()== getAuthenticatedCustomerId())
+                .filter(reservationDto -> reservationDto.getCustomerId() == getAuthenticatedCustomerId())
                 .toList();
 
         if (reservationDtoList.isEmpty()) {
@@ -95,13 +97,10 @@ public class CustomerController {
         }
 
         return new ResponseEntity<>(reservationDtoList, HttpStatus.OK);
-
     }
 
-   private int getAuthenticatedCustomerId() {
-       final String customerName =  SecurityContextHolder.getContext().getAuthentication().getName();
-       return customerEntityService.getEntityIdByName(customerName);
-   }
-
-
+    private int getAuthenticatedCustomerId() {
+        final String customerName = SecurityContextHolder.getContext().getAuthentication().getName();
+        return customerEntityService.getEntityIdByName(customerName);
+    }
 }
