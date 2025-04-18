@@ -9,6 +9,4 @@ public interface SpaceRepository extends JpaRepository<SpaceEntity, Integer> {
 
     boolean existsByName(String name);
 
-    SpaceEntity findByName(String name);
-
 }

@@ -5,13 +5,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 
 @Data
-@Component
 @Entity
 @Table(name = "space")
 public class SpaceEntity {

@@ -1,14 +1,15 @@
 package com.srasb.repository;
 
-import com.srasb.model.entity.CustomerEntity;
+
+import com.srasb.model.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface CustomerRepository extends JpaRepository<CustomerEntity, Integer> {
+public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
-    Optional<CustomerEntity> findByName(String name);
+    Optional<UserEntity> findByUsername(String name);
 
 }

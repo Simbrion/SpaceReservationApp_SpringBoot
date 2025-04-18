@@ -20,5 +20,7 @@ public class CustomerDto implements Dto {
     @Size(min = 3, max = 20, message = "The name should be between 3 and 20 letters long.")
     private String name;
 
+    private String password;
+
 
 }
