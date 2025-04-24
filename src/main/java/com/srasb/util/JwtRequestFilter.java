@@ -1,6 +1,7 @@
 package com.srasb.util;
 
 import com.srasb.config.JwtConfig;
+import com.srasb.model.securitymodel.CustomUserDetails;
 import com.srasb.service.userservice.UserAuthenticationService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -42,7 +43,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-        UserDetails userDetails = userAuthenticationService.loadUserByUsername(username);
+        CustomUserDetails userDetails = userAuthenticationService.loadUserByUsername(username);
 
         if (jwtUtil.isValidToken(jwt, userDetails)) {
             UsernamePasswordAuthenticationToken authToken =
