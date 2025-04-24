@@ -1,5 +1,6 @@
 package com.srasb.service.spaceservice;
 
+import com.srasb.model.dto.CustomerDto;
 import com.srasb.model.dto.SpaceDto;
 import com.srasb.model.entity.SpaceEntity;
 import com.srasb.service.DtoServiceWithLogger;
@@ -22,12 +23,18 @@ public class SpaceDtoServiceWithLogger extends DtoServiceWithLogger<SpaceDto, Sp
     @Override
     public List<SpaceDto> getDtoList() {
         log.info("SpaceDtoService produces Dto list.");
+        for (SpaceDto spaceDto : super.getDtoList()) {
+            log.info("SpaceDto on the list: [id={}, name={}, type={}, price={}]",
+                    spaceDto.getId(), spaceDto.getName(), spaceDto.getTypeOfSpace(), spaceDto.getPrice());
+        }
         return super.getDtoList();
+
     }
 
     @Override
     public SpaceDto getDto(SpaceEntity entity) {
-        log.info("SpaceDtoService produces Dto on the basis of a space entity.");
+        log.info("Producing SpaceDto from entity [id={}, name={}, type={}, price={}]",
+                entity.getId(), entity.getName(), entity.getTypeOfSpace(), entity.getPrice());
         return super.getDto(entity);
     }
 

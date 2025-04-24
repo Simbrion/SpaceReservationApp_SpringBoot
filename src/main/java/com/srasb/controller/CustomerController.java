@@ -6,6 +6,7 @@ import com.srasb.service.DtoService;
 import com.srasb.service.customerservice.CustomerEntityService;
 import com.srasb.service.reservationservice.ReservationEntityService;
 import com.srasb.service.spaceservice.SpaceEntityService;
+import com.srasb.util.JwtUtil;
 import com.srasb.util.messagecreators.MessageCreator;
 import com.srasb.util.TimeOverlapChecker;
 import jakarta.validation.Valid;
@@ -17,6 +18,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,12 +33,13 @@ public class CustomerController {
     private final TimeOverlapChecker timeOverlapChecker;
     private final DtoService<ReservationDto, ReservationEntity> reservationDtoService;
     private final MessageCreator messageCreator;
-
+    private final JwtUtil jwtUtil;
 
 
     @PostMapping("create-reservation")
     public ResponseEntity<String> createReservation(@Valid @RequestBody ReservationDto reservationDto,
-                                                    BindingResult bindingResult) {
+                                                    BindingResult bindingResult,
+                                                    @RequestHeader("Authorization") String authorizationHeader) {
 
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(messageCreator.validationFailedMessage() + bindingResult.getAllErrors().toString());
@@ -46,8 +49,11 @@ public class CustomerController {
             return ResponseEntity.badRequest().body(messageCreator.spaceForReservationNotExists());
         }
 
+
+
+
         ReservationEntity reservationEntity = reservationEntityService.getEntityFromDto(reservationDto);
-        reservationEntity.setCustomerEntity(customerEntityService.getEntityById(getAuthenticatedCustomerId()));
+        reservationEntity.setCustomerEntity(customerEntityService.getEntityById(getAuthenticatedCustomerId(authorizationHeader)));
         reservationEntity.setSpaceEntity(spaceEntityService.getEntityById(reservationDto.getSpaceId()));
         LocalDateTime startOfNewReservation = LocalDateTime.of(reservationDto.getDate(), reservationDto.getStartTime());
         LocalDateTime endOfNewReservation = LocalDateTime.of(reservationDto.getDate(), reservationDto.getEndTime());
@@ -60,7 +66,7 @@ public class CustomerController {
             return ResponseEntity.badRequest().body(messageCreator.endTimeOverlapsMessage());
         }
 
-        reservationDto.setCustomerId(getAuthenticatedCustomerId());
+        reservationDto.setCustomerId(getAuthenticatedCustomerId(authorizationHeader));
 
         reservationEntityService.addEntityBasedOn(reservationDto);
         return ResponseEntity.ok().body(messageCreator.reservationSavedMessage());
@@ -76,7 +82,8 @@ public class CustomerController {
         }
 
         if (!Objects.equals(reservationEntityService.getEntityById(id).getCustomerEntity().getName(), loggedInCustomerName)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
                     .body(messageCreator.noRightsToDeleteReservationMessage());
         }
 
@@ -85,11 +92,11 @@ public class CustomerController {
     }
 
     @GetMapping("show-reservations")
-    public ResponseEntity<List<ReservationDto>> showCustomerReservations() {
+    public ResponseEntity<List<ReservationDto>> showCustomerReservations(@RequestHeader("Authorization") String authorizationHeader) {
 
         List<ReservationDto> reservationDtoList = reservationDtoService.getDtoList()
                 .stream()
-                .filter(reservationDto -> reservationDto.getCustomerId() == getAuthenticatedCustomerId())
+                .filter(reservationDto -> reservationDto.getCustomerId() == getAuthenticatedCustomerId(authorizationHeader))
                 .toList();
 
         if (reservationDtoList.isEmpty()) {
@@ -99,8 +106,24 @@ public class CustomerController {
         return new ResponseEntity<>(reservationDtoList, HttpStatus.OK);
     }
 
-    private int getAuthenticatedCustomerId() {
-        final String customerName = SecurityContextHolder.getContext().getAuthentication().getName();
-        return customerEntityService.getEntityIdByName(customerName);
+    @GetMapping("profile")
+    public ResponseEntity<List<String>> showCustomerProfile(@RequestHeader("Authorization") String authorizationHeader)  {
+            return new ResponseEntity<>(getAuthenticatedCustomerProfile(authorizationHeader), HttpStatus.OK);
     }
+
+    private int getAuthenticatedCustomerId(String authorizationHeader) {
+        String customerToken = jwtUtil.getTokenFromAuthorisationHeader(authorizationHeader);
+        return Integer.parseInt(jwtUtil.getClaimFromToken(customerToken, "id"));
+    }
+
+    private List<String> getAuthenticatedCustomerProfile(String authorizationHeader) {
+        String customerToken = jwtUtil.getTokenFromAuthorisationHeader(authorizationHeader);
+        List<String> profileDataList = new ArrayList<>();
+        profileDataList.add("Your name: " + jwtUtil.getClaimFromToken(customerToken, "name"));
+        profileDataList.add("Your ID: " + jwtUtil.getClaimFromToken(customerToken, "id"));
+        profileDataList.add("Your user role: " + jwtUtil.getClaimFromToken(customerToken, "role").substring(5));
+        return  profileDataList;
+    }
+
+
 }

@@ -32,9 +32,9 @@ public class AdminController {
     private final MessageCreator messageCreator;
 
 
+
     @GetMapping("/show-reservations")
     public ResponseEntity<List<ReservationDto>> sendListOfReservations() {
-        System.out.println("!!!");
         List<ReservationDto> reservationDtoList = reservationDtoService.getDtoList();
 
         if (reservationDtoList.isEmpty()) {
@@ -124,4 +124,5 @@ public class AdminController {
 
         return new ResponseEntity<>(spaceDtoList, HttpStatus.OK);
     }
+
 }
