@@ -21,12 +21,19 @@ public class CustomerDtoServiceWithLogger extends DtoServiceWithLogger<CustomerD
     @Override
     public List<CustomerDto> getDtoList() {
         log.info("CustomerDtoService produces Dto list.");
+        for (CustomerDto customerDto : super.getDtoList()) {
+            log.info("CustomerDto on the list: [id={}, name={}]",
+                    customerDto.getId(),
+                    customerDto.getName());
+        }
         return super.getDtoList();
     }
 
     @Override
     public CustomerDto getDto(CustomerEntity entity) {
-        log.info("CustomerDtoService produces Dto on the basis of a customer entity.");
+        log.info("CustomerDtoService produces DTO from entity: [id={}, name={}]",
+                entity.getId(),
+                entity.getName());
         return super.getDto(entity);
     }
 }

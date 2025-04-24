@@ -105,4 +105,10 @@ public class EnglishMessageCreator extends MessageCreator {
     public String customerRegisteredMessage() {
         return "The customer has been registered: ";
     }
+
+
+    @Override
+    public String customerFormPasswordReqiured() {
+        return "Please provide the password!";
+    }
 }

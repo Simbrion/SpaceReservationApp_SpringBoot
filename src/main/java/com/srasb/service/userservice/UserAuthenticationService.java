@@ -1,10 +1,9 @@
 package com.srasb.service.userservice;
 
 import com.srasb.model.entity.UserEntity;
+import com.srasb.model.securitymodel.CustomUserDetails;
 import com.srasb.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -16,19 +15,17 @@ public class UserAuthenticationService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public CustomUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        UserEntity user =  userRepository.findByUsername(username).orElse(null);
+        UserEntity userEntity =  userRepository.findByUsername(username)
+                                               .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found");
-        }
-
-    return User.builder()
-            .username(user.getUsername())
-            .password(user.getPassword())
-            .roles(user.getUserRole().name().substring(5))
-            .build();
+    return new CustomUserDetails(userEntity.getId(),
+                                userEntity.getUsername(),
+                                userEntity.getPassword(),
+                                userEntity.getUserRole());
 
     }
+
+
 }

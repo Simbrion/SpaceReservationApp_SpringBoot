@@ -105,4 +105,9 @@ public class RussianMessageCreator extends MessageCreator {
     public String customerRegisteredMessage() {
         return "Клиент был зарегистрирован: ";
     }
+
+    @Override
+    public String customerFormPasswordReqiured() {
+        return "Пожалуйста, предоставьте пароль для вашей учетной записи!";
+    }
 }

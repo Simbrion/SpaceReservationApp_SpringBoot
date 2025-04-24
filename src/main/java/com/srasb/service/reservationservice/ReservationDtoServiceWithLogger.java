@@ -1,5 +1,6 @@
 package com.srasb.service.reservationservice;
 
+import com.srasb.model.dto.CustomerDto;
 import com.srasb.model.dto.ReservationDto;
 import com.srasb.model.entity.ReservationEntity;
 import com.srasb.service.DtoServiceWithLogger;
@@ -23,12 +24,29 @@ public class ReservationDtoServiceWithLogger extends DtoServiceWithLogger<Reserv
     @Override
     public List<ReservationDto> getDtoList() {
         log.info("ReservationDtoService produces Dto list.");
+        for (ReservationDto reservationDto : super.getDtoList()) {
+            log.info("ReservationDto on the list: [id={}, customerId={}, customerName={}, spaceId={}, spaceName={}, startTime={}, endTime={}]",
+                    reservationDto.getId(),
+                    reservationDto.getCustomerId(),
+                    reservationDto.getCustomerName(),
+                    reservationDto.getSpaceId(),
+                    reservationDto.getSpaceName(),
+                    reservationDto.getStartTime(),
+                    reservationDto.getEndTime());
+        }
         return super.getDtoList();
     }
 
     @Override
     public ReservationDto getDto(ReservationEntity entity) {
-        log.info("ReservationDtoService produces Dto on the basis of a reservation entity.");
+        log.info("Producing ReservationDto from entity: [id={}, customerName={}, customerId={}, spaceName={}, spaceId={}, startTime={}, endTime={}]",
+                entity.getId(),
+                entity.getCustomerEntity().getName(),
+                entity.getCustomerEntity().getId(),
+                entity.getSpaceEntity().getName(),
+                entity.getSpaceEntity().getId(),
+                entity.getStartTime(),
+                entity.getEndTime());
         return super.getDto(entity);
     }
 

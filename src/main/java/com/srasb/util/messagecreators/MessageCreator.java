@@ -43,4 +43,6 @@ public abstract class MessageCreator {
     public abstract String customerExistsMessage();
 
     public abstract String customerRegisteredMessage();
+
+    public abstract String customerFormPasswordReqiured();
 }

@@ -1,6 +1,7 @@
 package com.srasb.util;
 
 import com.srasb.config.JwtConfig;
+import com.srasb.model.entity.UserEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -17,9 +18,12 @@ public class JwtUtil {
 
     private final JwtConfig jwtConfig;
 
-    public String generateToken(String username) {
+    public String generateToken(UserEntity userEntity) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(userEntity.getUsername())
+                .claim("name", userEntity.getUsername())
+                .claim("id", Integer.toString(userEntity.getId()))
+                .claim("role", userEntity.getUserRole())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtConfig.getExpiration()))
                 .signWith(SignatureAlgorithm.HS256, jwtConfig.getSecret())
@@ -54,6 +58,18 @@ public class JwtUtil {
     public boolean isValidToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    public String getTokenFromAuthorisationHeader(String authorisationHeader) {
+        return authorisationHeader.replace("Bearer ", "");
+    }
+
+    public String getClaimFromToken(String token, String claimKey) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(jwtConfig.getSecret())
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get(claimKey, String.class);
     }
 
 }

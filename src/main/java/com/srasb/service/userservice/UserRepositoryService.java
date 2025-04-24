@@ -22,5 +22,4 @@ public class UserRepositoryService {
         return userRepository.findByUsername(username);
     }
 
-
 }

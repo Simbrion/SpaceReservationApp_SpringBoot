@@ -37,6 +37,10 @@ public class RegistrationController {
             return ResponseEntity.badRequest().body(messageCreator.customerExistsMessage());
         }
 
+        if (customerDto.getPassword() == null) {
+            return ResponseEntity.badRequest().body(messageCreator.customerFormPasswordReqiured());
+        }
+
         CustomerEntity newCustomer = new CustomerEntity();
         newCustomer.setName(customerDto.getName());
         System.out.println(newCustomer.getName());
